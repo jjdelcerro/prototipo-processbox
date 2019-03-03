@@ -1,0 +1,51 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.gvsig</groupId>
+    <artifactId>org.gvsig.processbox.app</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+  </parent>
+  <artifactId>org.gvsig.processbox.app.mainplugin</artifactId>
+  <name>${project.artifactId}</name>
+  <dependencies>
+    <dependency>
+        <groupId>org.gvsig</groupId>
+        <artifactId>org.gvsig.app.mainplugin</artifactId>
+        <scope>compile</scope>
+    </dependency>
+    <dependency>
+    	<groupId>org.gvsig</groupId>
+      <artifactId>org.gvsig.processbox.lib.api</artifactId>
+        <scope>compile</scope>
+    </dependency>
+    <dependency>
+    	<groupId>org.gvsig</groupId>
+      <artifactId>org.gvsig.processbox.lib.impl</artifactId>
+        <scope>runtime</scope>
+    </dependency>
+    <dependency>
+    	<groupId>org.gvsig</groupId>
+      <artifactId>org.gvsig.processbox.swing.api</artifactId>
+        <scope>compile</scope>
+    </dependency>
+    <dependency>
+    	<groupId>org.gvsig</groupId>
+      <artifactId>org.gvsig.processbox.swing.impl</artifactId>
+        <scope>runtime</scope>
+    </dependency>
+  </dependencies>
+
+  <properties>
+    <gvsig.package.info.state>devel</gvsig.package.info.state>
+    <gvsig.package.info.official>false</gvsig.package.info.official>
+    <gvsig.package.info.dependencies>required: org.gvsig.app.mainplugin -ge 2.5.0</gvsig.package.info.dependencies>
+    <gvsig.package.info.categories />
+    <gvsig.package.info.name>Process box framework</gvsig.package.info.name>
+    <gvsig.package.info.description>Process box framework and basic process</gvsig.package.info.description>
+    <gvsig.package.info.owner>gvSIG Association</gvsig.package.info.owner>
+    <gvsig.package.info.javaVM>j1_8</gvsig.package.info.javaVM>
+    <gvsig.package.info.sourcesURL>${project.scm.url}</gvsig.package.info.sourcesURL>
+    <gvsig.package.info.poolURL>https://devel.gvsig.org/download/projects/gvsig-processbox/pool</gvsig.package.info.poolURL>
+  </properties>
+
+</project>

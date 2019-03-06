@@ -12,17 +12,20 @@ public class Pruebas {
     
     
     private void test1() {
-        ProcessBoxUtils.processBuilder("XYShift")
+        ProcessBuilder builder = ProcessBoxUtils.processBuilder("XYShift");
+        builder
             .input()
                 .set("X", 100)
                 .set("Y", 100)
                 .set("layer", new File("/tmp/pp.shp"))
-                .set("USE_SELECTION", false)
             .output()
                 .set("RESULT_POL", new File("/tmp/pp_pol.shp"))
                 .set("RESULT_LINE", new File("/tmp/pp_line.shp"))
                 .set("RESULT_POINT", new File("/tmp/pp_point.shp"))
-            .execute();
+            ;
+        builder.input().params().getAsFeatureStoreInputChannel("layer").setUseSelection(true);
+        builder.input().params().getAsFeatureStoreInputChannel("layer").setFilter("nmnmnbmn");
+        builder.execute();
     }
 
     private void test2() throws Exception {
@@ -39,8 +42,8 @@ public class Pruebas {
                     "RESULT_POINT", new File("/tmp/pp_point.shp")
             )
             .execute()
-            .output().params().getAsOutputChannel("RESULT_POINT")
-                .getFeatureStore().getFeatureCount();
+            .output().params().getAsFeatureStoreOutputChannel("RESULT_POINT")
+                .getStore().getFeatureCount();
         
         /*
         En el ExpressionEvaluator se podria utilizar algo como:

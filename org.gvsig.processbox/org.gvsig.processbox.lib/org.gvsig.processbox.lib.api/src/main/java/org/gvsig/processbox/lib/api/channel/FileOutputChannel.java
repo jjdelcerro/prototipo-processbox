@@ -6,8 +6,6 @@ import org.gvsig.tools.util.HasAFile;
  *
  * @author jjdelcerro
  */
-public interface InputFileChannel extends HasAFile, InputChannel {
-
-    public boolean exists();
+public interface FileOutputChannel extends HasAFile, OutputChannel {
     
 }

@@ -1,10 +1,12 @@
 package org.gvsig.processbox.lib.api;
 
+import org.gvsig.tools.task.MonitorableTask;
+
 /**
  *
  * @author jjdelcerro
  */
-public interface Process {
+public interface Process extends MonitorableTask {
 
     public String getID();
     

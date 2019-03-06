@@ -11,6 +11,4 @@ public interface Channel {
 
     public DataStore getStore();
     
-    public FeatureStore getFeatureStore();
-    
 }

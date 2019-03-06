@@ -28,10 +28,11 @@ import org.gvsig.fmap.geom.GeometryLibrary;
 import org.gvsig.processbox.lib.api.ProcessBoxLibrary;
 import org.gvsig.processbox.lib.api.ProcessBoxLocator;
 import org.gvsig.processbox.lib.api.ProcessBoxManager;
+import org.gvsig.processbox.lib.impl.channels.DefaultFeatureStoreInputChannel;
 import org.gvsig.processbox.lib.impl.channels.ShapeOutputChannel;
-import org.gvsig.processbox.lib.impl.channels.StoreInputChannel;
+import org.gvsig.processbox.lib.impl.coerce.CoerceToCalculatedValue;
+import org.gvsig.processbox.lib.impl.coerce.CoerceToFeatureStoreInputChannel;
 import org.gvsig.processbox.lib.impl.coerce.CoerceToFileOutputChannel;
-import org.gvsig.processbox.lib.impl.coerce.CoerceToStoreInputChannel;
 import org.gvsig.tools.ToolsLibrary;
 import org.gvsig.tools.library.AbstractLibrary;
 import org.gvsig.tools.library.LibraryException;
@@ -45,6 +46,10 @@ import org.gvsig.tools.dataTypes.DataTypesManager;
  */
 public class ProcessBoxImplLibrary extends AbstractLibrary {
 
+    static int typeShapeOutputChannel = -1;
+    static int typeCalculatedValue = -1;
+    static int typeFeatureStoreInputChannel = -1;
+    
     @Override
     public void doRegistration() {
         super.doRegistration();
@@ -59,19 +64,26 @@ public class ProcessBoxImplLibrary extends AbstractLibrary {
         ProcessBoxLocator.registerDefaultProcessBoxManager(DefaultProcessBoxManager.class);
         
         DataTypesManager dataTypesManager = ToolsLocator.getDataTypesManager();
-        dataTypesManager.addtype(
+        this.typeFeatureStoreInputChannel = dataTypesManager.addtype(
                 0, 
                 null, 
-                "StoreInputChannel", 
-                StoreInputChannel.class, 
-                new CoerceToStoreInputChannel()
+                "ProcessBoxFeatureStoreInputChannel", 
+                DefaultFeatureStoreInputChannel.class, 
+                new CoerceToFeatureStoreInputChannel()
         );
-        dataTypesManager.addtype(
+        this.typeShapeOutputChannel = dataTypesManager.addtype(
                 0, 
                 null, 
-                "ShapeOutputChannel", 
+                "ProcessBoxShapeOutputChannel", 
                 ShapeOutputChannel.class, 
                 new CoerceToFileOutputChannel()
+        );
+        this.typeCalculatedValue = dataTypesManager.addtype(
+                0, 
+                null, 
+                "ProcessBoxCalculatedValue", 
+                DefaultCalculatedValue.class, 
+                new CoerceToCalculatedValue()
         );
 
     }

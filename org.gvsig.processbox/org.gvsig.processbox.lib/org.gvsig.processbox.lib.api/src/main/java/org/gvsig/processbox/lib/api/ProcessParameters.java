@@ -1,10 +1,11 @@
 package org.gvsig.processbox.lib.api;
 
 import org.gvsig.processbox.lib.api.channel.Channel;
-import org.gvsig.processbox.lib.api.channel.OutputChannel;
-import org.gvsig.processbox.lib.api.channel.InputChannel;
 import org.gvsig.fmap.dal.DataStore;
+import org.gvsig.fmap.dal.feature.Feature;
 import org.gvsig.fmap.dal.feature.FeatureStore;
+import org.gvsig.processbox.lib.api.channel.FeatureStoreInputChannel;
+import org.gvsig.processbox.lib.api.channel.FeatureStoreOutputChannel;
 import org.gvsig.tools.dynobject.DynObject;
 import org.gvsig.tools.dynobject.DynStruct;
 
@@ -13,6 +14,13 @@ import org.gvsig.tools.dynobject.DynStruct;
  * @author jjdelcerro
  */
 public interface ProcessParameters {
+
+    public static final String TAG_CALCULATED_DEFAULT = "TAG_CALCULATED_DEFAULT";
+    public static final String TAG_CALCULATED_TYPE = "TAG_CALCULATED_TYPE";
+    public static final String TAG_OUTPUTVECTORCHANNEL_GEOMETRY_TYPE = "TAG_OUTPUTVECTORCHANNEL_GEOMETRY_TYPE";
+    public static final String TAG_INPUTVECTORCHANNEL_GEOMETRY_TYPES = "TAG_INPUTVECTORCHANNEL_GEOMETRY_TYPES";
+    
+    public void setCurrentFeature(Feature feature);
 
     public DynObject get();
     
@@ -40,9 +48,9 @@ public interface ProcessParameters {
     
     public Channel getAsChannel(String name);
 
-    public InputChannel getAsInputChannel(String name);
+    public FeatureStoreInputChannel getAsFeatureStoreInputChannel(String name);
 
-    public OutputChannel getAsOutputChannel(String name);
+    public FeatureStoreOutputChannel getAsFeatureStoreOutputChannel(String name);
 
     
 }

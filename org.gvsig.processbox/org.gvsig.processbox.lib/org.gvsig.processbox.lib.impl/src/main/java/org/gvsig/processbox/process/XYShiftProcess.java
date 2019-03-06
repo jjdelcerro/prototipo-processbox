@@ -40,17 +40,22 @@ import org.gvsig.fmap.geom.primitive.Curve;
 import org.gvsig.fmap.geom.primitive.Point;
 import org.gvsig.fmap.geom.primitive.Surface;
 import org.gvsig.fmap.geom.type.GeometryType;
-import org.gvsig.processbox.lib.api.channel.OutputChannel;
 import org.gvsig.processbox.lib.api.ProcessFactory;
 import org.gvsig.processbox.lib.api.ProcessParameters;
+import org.gvsig.processbox.lib.api.channel.FeatureStoreInputChannel;
+import org.gvsig.processbox.lib.api.channel.FeatureStoreOutputChannel;
 import org.gvsig.processbox.lib.spi.AbstractProcess;
 import static org.gvsig.processbox.process.XYShiftProcessFactory.LAYER;
 import static org.gvsig.processbox.process.XYShiftProcessFactory.RESULT_LINE;
 import static org.gvsig.processbox.process.XYShiftProcessFactory.RESULT_POINT;
 import static org.gvsig.processbox.process.XYShiftProcessFactory.RESULT_POL;
-import static org.gvsig.processbox.process.XYShiftProcessFactory.USE_SELECTION;
 import static org.gvsig.processbox.process.XYShiftProcessFactory.X;
 import static org.gvsig.processbox.process.XYShiftProcessFactory.Y;
+import org.gvsig.tools.dispose.DisposeUtils;
+import org.gvsig.tools.exception.BaseException;
+import org.gvsig.tools.task.SimpleTaskStatus;
+import org.gvsig.tools.visitor.VisitCanceledException;
+import org.gvsig.tools.visitor.Visitor;
 
 /**
  *
@@ -66,75 +71,71 @@ public class XYShiftProcess extends AbstractProcess {
     @Override
     public void execute(ProcessParameters in, ProcessParameters out) {
         try {
-            if( out.getAsOutputChannel(RESULT_POINT).exists() ||
-                    out.getAsOutputChannel(RESULT_LINE).exists() ||
-                    out.getAsOutputChannel(RESULT_POL).exists()  ) {
+            if (out.getAsFeatureStoreOutputChannel(RESULT_POINT).exists()
+                    || out.getAsFeatureStoreOutputChannel(RESULT_LINE).exists()
+                    || out.getAsFeatureStoreOutputChannel(RESULT_POL).exists()) {
                 throw new IllegalArgumentException("Output already exists");
             }
-                                
-            FeatureStore store = (FeatureStore) in.getAsInputChannel(LAYER).getStore();
-            boolean useSelection = in.getAsBoolean(USE_SELECTION);
+
+            FeatureStoreInputChannel inputChannel = in.getAsFeatureStoreInputChannel(LAYER);
             double shiftx = in.getAsDouble(X);
             double shifty = in.getAsDouble(Y);
 
             AffineTransform transform = new AffineTransform();
             transform.translate(shiftx, shifty);
-            
-            FeatureType featureType = store.getDefaultFeatureType();
+
+            FeatureType featureType = inputChannel.getStore().getDefaultFeatureType();
             GeometryType geomType = featureType.getDefaultGeometryAttribute().getGeomType();
-            if( geomType.isTypeOf(Geometry.TYPES.SURFACE) ||
-                    geomType.isTypeOf(Geometry.TYPES.MULTISURFACE)) {
+            if (geomType.isTypeOf(Geometry.TYPES.SURFACE)
+                    || geomType.isTypeOf(Geometry.TYPES.MULTISURFACE)) {
                 this.copy(
-                        store,
-                        useSelection,
+                        inputChannel,
                         new Predicate<Feature>() {
-                            @Override
-                            public boolean test(Feature t) {
-                                Geometry g = t.getDefaultGeometry();
-                                return g == null || 
-                                        g instanceof Surface || 
-                                        g instanceof MultiSurface;
-                            }
-                        },
-                        out.getAsOutputChannel(RESULT_POL),
+                    @Override
+                    public boolean test(Feature t) {
+                        Geometry g = t.getDefaultGeometry();
+                        return g == null
+                                || g instanceof Surface
+                                || g instanceof MultiSurface;
+                    }
+                },
+                        out.getAsFeatureStoreOutputChannel(RESULT_POL),
                         Geometry.TYPES.MULTIPOLYGON,
                         transform
                 );
             }
-            if( geomType.isTypeOf(Geometry.TYPES.CURVE) ||
-                    geomType.isTypeOf(Geometry.TYPES.MULTICURVE)) {
+            if (geomType.isTypeOf(Geometry.TYPES.CURVE)
+                    || geomType.isTypeOf(Geometry.TYPES.MULTICURVE)) {
                 this.copy(
-                        store,
-                        useSelection,
+                        inputChannel,
                         new Predicate<Feature>() {
-                            @Override
-                            public boolean test(Feature t) {
-                                Geometry g = t.getDefaultGeometry();
-                                return g == null || 
-                                        g instanceof Curve || 
-                                        g instanceof MultiCurve;
-                            }
-                        },
-                        out.getAsOutputChannel(RESULT_LINE),
+                    @Override
+                    public boolean test(Feature t) {
+                        Geometry g = t.getDefaultGeometry();
+                        return g == null
+                                || g instanceof Curve
+                                || g instanceof MultiCurve;
+                    }
+                },
+                        out.getAsFeatureStoreOutputChannel(RESULT_LINE),
                         Geometry.TYPES.MULTILINE,
                         transform
                 );
             }
-            if( geomType.isTypeOf(Geometry.TYPES.POINT) ||
-                    geomType.isTypeOf(Geometry.TYPES.MULTIPOINT)) {
+            if (geomType.isTypeOf(Geometry.TYPES.POINT)
+                    || geomType.isTypeOf(Geometry.TYPES.MULTIPOINT)) {
                 this.copy(
-                        store,
-                        useSelection,
+                        inputChannel,
                         new Predicate<Feature>() {
-                            @Override
-                            public boolean test(Feature t) {
-                                Geometry g = t.getDefaultGeometry();
-                                return g == null || 
-                                        g instanceof Point || 
-                                        g instanceof MultiPoint;
-                            }
-                        },
-                        out.getAsOutputChannel(RESULT_POINT),
+                    @Override
+                    public boolean test(Feature t) {
+                        Geometry g = t.getDefaultGeometry();
+                        return g == null
+                                || g instanceof Point
+                                || g instanceof MultiPoint;
+                    }
+                },
+                        out.getAsFeatureStoreOutputChannel(RESULT_POINT),
                         Geometry.TYPES.MULTIPOINT,
                         transform
                 );
@@ -144,61 +145,58 @@ public class XYShiftProcess extends AbstractProcess {
         }
     }
 
-
     private void copy(
-            FeatureStore inputStore, 
-            boolean useSelection, 
-            Predicate<Feature> filter, 
-            OutputChannel outputChannel,
+            FeatureStoreInputChannel inputChannel,
+            final Predicate<Feature> filter,
+            FeatureStoreOutputChannel outputChannel,
             int outputGeomType,
-            AffineTransform transform
+            final AffineTransform transform
         ) {
-        FeatureStore outputStore = null;
         try {
-            FeatureSet set;
-            if( useSelection ) {
-                set = inputStore.getFeatureSelection();
-            } else {
-                set = inputStore.getFeatureSet();
-            }
-            FeatureType featureType = inputStore.getDefaultFeatureType();
+            FeatureType featureType = inputChannel.getStore().getDefaultFeatureType();
             EditableFeatureType newType = featureType.getEditable();
             EditableFeatureAttributeDescriptor attrdesc = (EditableFeatureAttributeDescriptor) newType.getDefaultGeometryAttribute();
             attrdesc.setGeometryType(outputGeomType, attrdesc.getGeomType().getSubType());
-            
+
             outputChannel.setFeatureType(newType);
             outputChannel.create();
-            outputStore = (FeatureStore) outputChannel.getStore();
+            final FeatureStore outputStore = outputChannel.getStore();
 
-            outputStore.edit(FeatureStore.MODE_APPEND);
-            for (Feature feature : set) {
-                if( feature==null || !filter.test(feature) ) {
-                    continue;
-                }
-                EditableFeature outf = outputStore.createNewFeature(feature);
-                Geometry geom = outf.getDefaultGeometry();
-                if( geom!=null ) {
-                        geom = geom.cloneGeometry();
-                        geom.transform(transform);
-                        outf.setDefaultGeometry(geom);
-                }
-                outputStore.insert(outf);
-            }
-            
-            
-        } catch (Exception ex) { // TODO: falta gestionar el error
-            
-        } finally {
-            if( outputStore!=null ) {
-                if( outputStore.isAppending() ) {
-                    try {
-                        outputStore.finishEditing();
-                    } catch(Exception ex) {
-                        throw new RuntimeException("No puedo terminar edicion.",ex);
+            try {
+                outputStore.edit(FeatureStore.MODE_APPEND);
+                this.processFeatures(inputChannel, new Visitor() {
+                    @Override
+                    public void visit(Object obj) throws VisitCanceledException, BaseException {
+                        Feature feature = (Feature) obj;
+                        if (feature == null || !filter.test(feature)) {
+                            return;
+                        }
+                        ProcessParameters in;
+                        EditableFeature outf = outputStore.createNewFeature(feature);
+                        Geometry geom = outf.getDefaultGeometry();
+                        if (geom != null) {
+                            geom = geom.cloneGeometry();
+                            geom.transform(transform);
+                            outf.setDefaultGeometry(geom);
+                        }
+                        outputStore.insert(outf);
                     }
+                });
+            } finally {
+                if (outputStore != null) {
+                    if (outputStore.isAppending()) {
+                        try {
+                            outputStore.finishEditing();
+                        } catch (Exception ex) {
+                            throw new RuntimeException("No puedo terminar edicion.", ex);
+                        }
+                    }
+                    outputStore.dispose();
                 }
-                outputStore.dispose();
             }
+        } catch (Exception ex) { // TODO: falta gestionar el error
+
         }
     }
+
 }

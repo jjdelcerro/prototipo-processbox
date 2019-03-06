@@ -3,25 +3,60 @@ package org.gvsig.processbox.lib.impl.channels;
 import java.io.File;
 import org.gvsig.fmap.dal.DALLocator;
 import org.gvsig.fmap.dal.DataManager;
-import org.gvsig.fmap.dal.DataServerExplorer;
 import org.gvsig.fmap.dal.DataStore;
 import org.gvsig.fmap.dal.feature.EditableFeatureType;
 import org.gvsig.fmap.dal.feature.FeatureStore;
-import org.gvsig.fmap.dal.feature.NewFeatureStoreParameters;
-import org.gvsig.processbox.lib.api.channel.OutputFileChannel;
+import org.gvsig.fmap.geom.Geometry;
+import org.gvsig.fmap.geom.GeometryLocator;
+import org.gvsig.fmap.geom.type.GeometryType;
+import static org.gvsig.processbox.lib.api.ProcessParameters.TAG_OUTPUTVECTORCHANNEL_GEOMETRY_TYPE;
+import org.gvsig.processbox.lib.api.channel.FeatureStoreOutputChannel;
+import org.gvsig.processbox.lib.api.channel.FileOutputChannel;
+import org.gvsig.processbox.lib.impl.BaseComplexParameter;
+import org.gvsig.tools.dynobject.DynField;
+import org.gvsig.tools.dynobject.DynField_v2;
+import org.gvsig.tools.dynobject.Tags;
 
 /**
  *
  * @author jjdelcerro
  */
 @SuppressWarnings("UseSpecificCatch")
-public class ShapeOutputChannel implements OutputFileChannel {
+public class ShapeOutputChannel 
+        extends BaseComplexParameter
+        implements FeatureStoreOutputChannel,  FileOutputChannel 
+    {
 
     private EditableFeatureType featureType;
     private File file;
+    private FeatureStore store;
 
-    public ShapeOutputChannel(File file) {
-        this.file = file;
+    public ShapeOutputChannel() {
+        this.file = null;
+        this.store = null;
+        this.featureType = null;
+    }
+    
+    public ShapeOutputChannel(DynField field) {
+        this();
+        this.setParameterDefinition(field);
+    }
+    
+    @Override
+    public GeometryType getGeometryType() {
+        try {
+            Tags tags = this.getParameterDefinition().getTags();
+            Integer type = (Integer) tags.get(TAG_OUTPUTVECTORCHANNEL_GEOMETRY_TYPE);
+            if( type==null ) {
+                return null;
+            }
+            GeometryType geomtype = GeometryLocator.getGeometryManager().getGeometryType(
+                    type, Geometry.SUBTYPES.UNKNOWN
+            );
+            return geomtype;
+        } catch (Exception ex) {
+            return null;
+        }
     }
 
     @Override
@@ -49,23 +84,19 @@ public class ShapeOutputChannel implements OutputFileChannel {
     }
 
     @Override
-    public DataStore getStore() {
-        try {
-            DataManager dataManager = DALLocator.getDataManager();
-            FeatureStore store = (FeatureStore) dataManager.openStore(
-                    "Shape",
-                    "file", this.getFile()
-            );
-            return store;
-        } catch (Exception ex) { // TODO: falta por gestionar los errores
-            return null;
+    public FeatureStore getStore() {
+        if( this.store == null ) {
+            try {
+                DataManager dataManager = DALLocator.getDataManager();
+                this.store = (FeatureStore) dataManager.openStore(
+                        "Shape",
+                        "file", this.getFile()
+                );
+            } catch (Exception ex) { // TODO: falta por gestionar los errores
+                return null;
+            }
         }
-    }
-
-
-    @Override
-    public FeatureStore getFeatureStore() {
-        return (FeatureStore) this.getStore();
+        return this.store;
     }
 
     @Override

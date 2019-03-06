@@ -48,5 +48,14 @@ public interface ParametersDefinitionBuilder {
             boolean mandatory,
             int geometryType
     );
-    
+
+
+    public void addCalculatedValue(
+            String name, 
+            String label, 
+            String description, 
+            int type, 
+            Object defaultValue,
+            String parentParameterName
+    );
 }

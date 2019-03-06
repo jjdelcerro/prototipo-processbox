@@ -3,22 +3,28 @@ package org.gvsig.processbox.lib.impl.channels;
 import java.io.File;
 import org.gvsig.fmap.dal.DALLocator;
 import org.gvsig.fmap.dal.DataManager;
-import org.gvsig.fmap.dal.DataStore;
 import org.gvsig.fmap.dal.feature.FeatureStore;
-import org.gvsig.processbox.lib.api.channel.InputFileChannel;
+import org.gvsig.processbox.lib.api.channel.FeatureStoreInputChannel;
+import org.gvsig.processbox.lib.api.channel.FileInputChannel;
+import org.gvsig.tools.dynobject.DynField;
 
 /**
  *
  * @author jjdelcerro
  */
-public class ShapeInputChannel implements InputFileChannel {
+@SuppressWarnings("UseSpecificCatch")
+public class ShapeInputChannel 
+        extends DefaultFeatureStoreInputChannel
+        implements FeatureStoreInputChannel, FileInputChannel 
+    {
 
     private File file;
 
-    public ShapeInputChannel(File file) {
-        this.file = file;
+    public ShapeInputChannel() {
+        super();
+        this.file = null;
     }
-    
+
     @Override
     public boolean exists() {
         if( this.file == null ) {
@@ -38,22 +44,20 @@ public class ShapeInputChannel implements InputFileChannel {
     }
 
     @Override
-    public DataStore getStore() {
-        try {
-            DataManager dataManager = DALLocator.getDataManager();
-            FeatureStore store = (FeatureStore) dataManager.openStore(
-                    "Shape",
-                    "file", this.getFile()
-            );
-            return store;
-        } catch (Exception ex) { // TODO: falta por gestionar los errores
-            return null;
+    public FeatureStore getStore() {
+        if( super.getStore() == null ) {
+            try {
+                DataManager dataManager = DALLocator.getDataManager();
+                FeatureStore theStore = (FeatureStore) dataManager.openStore(
+                        "Shape",
+                        "file", this.getFile()
+                );
+                super.setStore(theStore);
+            } catch (Exception ex) { // TODO: falta por gestionar los errores
+                return null;
+            }
         }
+        return super.getStore();
     }
     
-
-    @Override
-    public FeatureStore getFeatureStore() {
-        return (FeatureStore) this.getStore();
-    }
 }

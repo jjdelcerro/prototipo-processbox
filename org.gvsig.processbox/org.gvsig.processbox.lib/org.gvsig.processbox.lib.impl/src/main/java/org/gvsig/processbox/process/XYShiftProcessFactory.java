@@ -49,7 +49,7 @@ public class XYShiftProcessFactory extends AbstractProcessFactory {
     public static final String RESULT_LINE = "RESULT_LINE";
 
     public static final String LAYER = "LAYER";
-    public static final String USE_SELECTION = "USE_SELECTION";
+//    public static final String USE_SELECTION = "USE_SELECTION";
     public static final String X = "X";
     public static final String Y = "Y";
 
@@ -73,25 +73,21 @@ public class XYShiftProcessFactory extends AbstractProcessFactory {
                     .add(Geometry.TYPES.GEOMETRY)
                     .asList()
         );
-        builder.addBoolean(
-                USE_SELECTION, 
-                "Use selected values", 
-                null, 
-                false
-        );
-        builder.addNumericalValue(
+        builder.addCalculatedValue(
                 X, 
                 "X shift", 
                 null, 
                 DataTypes.DOUBLE, 
-                0
+                0, 
+                LAYER
         );
-        builder.addNumericalValue(
+        builder.addCalculatedValue(
                 Y, 
                 "Y shift", 
                 null, 
                 DataTypes.DOUBLE, 
-                0
+                0,
+                LAYER
         );
         this.setInputParametersDefinition(builder.asParametersDefinition());
 

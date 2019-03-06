@@ -1,20 +1,18 @@
 package org.gvsig.processbox.lib.impl;
 
-import org.gvsig.processbox.lib.impl.channels.ShapeOutputChannel;
 import java.util.ArrayList;
 import java.util.List;
-import org.gvsig.fmap.dal.feature.FeatureStore;
 import org.gvsig.fmap.geom.Geometry;
-import org.gvsig.processbox.lib.api.channel.OutputChannel;
 import org.gvsig.tools.ToolsLocator;
 import org.gvsig.tools.dynobject.DynClass;
 import org.gvsig.tools.dynobject.DynField_v2;
 import org.gvsig.tools.dynobject.DynObjectManager;
 import org.gvsig.tools.dynobject.DynStruct;
 import org.gvsig.processbox.lib.api.ParametersDefinitionBuilder;
-import org.gvsig.processbox.lib.impl.channels.StoreInputChannel;
+import org.gvsig.processbox.lib.api.ProcessParameters;
 import org.gvsig.tools.dataTypes.DataType;
 import org.gvsig.tools.dataTypes.DataTypesManager;
+import org.gvsig.tools.dynobject.Tags;
 
 /**
  *
@@ -73,7 +71,7 @@ public class DefaultParametersDefinitionBuilder implements ParametersDefinitionB
             List<Integer> geometryTypes
     ) {
         DataTypesManager dataTypesManager = ToolsLocator.getDataTypesManager();
-        DataType type = dataTypesManager.getDataType(StoreInputChannel.class);
+        DataType type = dataTypesManager.get(ProcessBoxImplLibrary.typeFeatureStoreInputChannel);
         
         DynField_v2 field = (DynField_v2) this.definition.addDynField(name);
         field.setType(type);
@@ -86,7 +84,7 @@ public class DefaultParametersDefinitionBuilder implements ParametersDefinitionB
         if( geometryTypes.isEmpty() ) {
             geometryTypes.add(Geometry.TYPES.GEOMETRY);
         }
-        field.getTags().set(ParametersDefinitionBuilder.GEOMETRY_TYPES, geometryTypes);
+        field.getTags().set(ProcessParameters.TAG_INPUTVECTORCHANNEL_GEOMETRY_TYPES, geometryTypes);
    }
 
     @Override
@@ -98,13 +96,40 @@ public class DefaultParametersDefinitionBuilder implements ParametersDefinitionB
             int geometryType
         ) {
         DataTypesManager dataTypesManager = ToolsLocator.getDataTypesManager();
-        DataType type = dataTypesManager.getDataType(ShapeOutputChannel.class);
+        DataType type = dataTypesManager.get(ProcessBoxImplLibrary.typeShapeOutputChannel);
         
         DynField_v2 field = (DynField_v2) this.definition.addDynFieldObject(name);
         field.setType(type);
         field.setLabel(label);
         field.setDescription(description);
         field.setMandatory(true);
-        field.getTags().set(ParametersDefinitionBuilder.GEOMETRY_TYPE, geometryType);
+        field.getTags().set(ProcessParameters.TAG_OUTPUTVECTORCHANNEL_GEOMETRY_TYPE, geometryType);
     }
+
+    @Override
+    public void addCalculatedValue(
+            String name, 
+            String label, 
+            String description, 
+            int type, 
+            Object defaultValue, 
+            String parentParameterName
+        ) {
+        DataTypesManager dataTypesManager = ToolsLocator.getDataTypesManager();
+        DataType dataType = dataTypesManager.get(ProcessBoxImplLibrary.typeCalculatedValue);
+        
+        DynField_v2 field = (DynField_v2) this.definition.addDynFieldObject(name);
+        field.setType(dataType);
+        field.setLabel(label);
+        field.setDescription(description);
+        field.setMandatory(true);
+        field.setDefaultFieldValue(null);
+
+        Tags tags = field.getTags();
+        tags.set(ProcessParameters.TAG_CALCULATED_DEFAULT, defaultValue);
+        tags.set(ProcessParameters.TAG_CALCULATED_TYPE, type);
+    }
+    
+    
+    
 }

@@ -9,8 +9,6 @@ import org.gvsig.fmap.dal.feature.EditableFeatureType;
 public interface OutputChannel extends Channel {
     public boolean exists();
 
-    public void setFeatureType(EditableFeatureType newType);
-
     public void create();
 
 }
